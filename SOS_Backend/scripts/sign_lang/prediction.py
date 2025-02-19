@@ -14,6 +14,7 @@ ddd=enchant.Dict("en-US")
 hd = HandDetector(maxHands=1)
 hd2 = HandDetector(maxHands=1)
 import tkinter as tk
+from tkinter import ttk
 from PIL import Image, ImageTk
 
 offset=29
@@ -42,10 +43,7 @@ class Application:
         self.next_flag=True
         self.prev_char=""
         self.count=-1
-        self.ten_prev_char=[]
-        for i in range(10):
-            self.ten_prev_char.append(" ")
-
+        self.ten_prev_char = [" "] * 10
 
         for i in ascii_uppercase:
             self.ct[i] = 0
@@ -56,72 +54,68 @@ class Application:
         self.root.title("Sign Language To Text Conversion")
         self.root.protocol('WM_DELETE_WINDOW', self.destructor)
         self.root.geometry("1300x700")
+        self.root.configure(bg="#2C2F33")  # Dark background
 
-        self.panel = tk.Label(self.root)
+        self.panel = tk.Label(self.root, bg="#2C2F33")
         self.panel.place(x=50, y=3, width=480, height=640)
 
-        self.panel2 = tk.Label(self.root)  # initialize image panel
+        self.panel2 = tk.Label(self.root, bg="#2C2F33")  # initialize image panel
         self.panel2.place(x=550, y=200, width=300, height=300)
-        
-        self.panel6 = tk.Label(self.root)  # initialize image panel
+
+        self.panel6 = tk.Label(self.root, bg="#2C2F33")  # initialize image panel
         self.panel6.place(x=900, y=115)
         imgtk = ImageTk.PhotoImage(image=Image.open("guide.jpg"))
         self.panel6.imgtk = imgtk
         self.panel6.config(image=imgtk)
-        
-        self.T = tk.Label(self.root)
+
+        self.T = tk.Label(self.root, fg="white", bg="#2C2F33")
         self.T.place(x=60, y=5)
         self.T.config(text="Sign Language To Text Conversion", font=("Courier", 30, "bold"))
 
-        self.panel3 = tk.Label(self.root)  # Current Symbol
+        self.panel3 = tk.Label(self.root, fg="#FFD700", bg="#2C2F33")  # Gold text for Character
         self.panel3.place(x=280, y=585)
 
-        self.T1 = tk.Label(self.root)
+        self.T1 = tk.Label(self.root, fg="white", bg="#2C2F33")
         self.T1.place(x=10, y=580)
         self.T1.config(text="Character :", font=("Courier", 30, "bold"))
 
-        self.panel5 = tk.Label(self.root)  # Sentence
+        self.panel5 = tk.Label(self.root, fg="white", bg="#2C2F33")  # Sentence
         self.panel5.place(x=260, y=632)
 
-        self.T3 = tk.Label(self.root)
+        self.T3 = tk.Label(self.root, fg="white", bg="#2C2F33")
         self.T3.place(x=10, y=632)
         self.T3.config(text="Sentence :", font=("Courier", 30, "bold"))
 
-        self.T4 = tk.Label(self.root)
+        self.T4 = tk.Label(self.root, fg="#FF5555", bg="#2C2F33")  # Red text for Suggestions
         self.T4.place(x=10, y=700)
-        self.T4.config(text="Suggestions :", fg="red", font=("Courier", 30, "bold"))
+        self.T4.config(text="Suggestions :", font=("Courier", 30, "bold"))
 
+        # Buttons
+        self.b1 = tk.Button(self.root, bg="#FFCC00", fg="black")
+        self.b1.place(x=390, y=700)
 
-        self.b1=tk.Button(self.root)
-        self.b1.place(x=390,y=700)
-
-        self.b2 = tk.Button(self.root)
+        self.b2 = tk.Button(self.root, bg="#FFCC00", fg="black")
         self.b2.place(x=590, y=700)
 
-        self.b3 = tk.Button(self.root)
+        self.b3 = tk.Button(self.root, bg="#FFCC00", fg="black")
         self.b3.place(x=790, y=700)
 
-        self.b4 = tk.Button(self.root)
+        self.b4 = tk.Button(self.root, bg="#FFCC00", fg="black")
         self.b4.place(x=990, y=700)
 
-        self.speak = tk.Button(self.root)
+        self.speak = tk.Button(self.root, bg="#4CAF50", fg="white")  # Green for Speak
         self.speak.place(x=1305, y=630)
-        self.speak.config(text="Speak", font=("Courier", 20), wraplength=100, command=self.speak_fun)
+        self.speak.config(text="🔊 Speak", font=("Courier", 20), wraplength=150, command=self.speak_fun)
 
-        self.clear = tk.Button(self.root)
-        self.clear.place(x=1205, y=630)
-        self.clear.config(text="Clear", font=("Courier", 20), wraplength=100, command=self.clear_fun)
-
-
-
-
+        self.clear = tk.Button(self.root, bg="#F44336", fg="white")  # Red for Clear
+        self.clear.place(x=1105, y=630)
+        self.clear.config(text="🗑️ Clear", font=("Courier", 20), wraplength=165, command=self.clear_fun)
 
         self.str = " "
         self.ccc=0
         self.word = " "
         self.current_symbol = "C"
         self.photo = "Empty"
-
 
         self.word1=" "
         self.word2 = " "
