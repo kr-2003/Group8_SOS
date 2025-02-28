@@ -16,6 +16,12 @@ EquaSpace is an innovative and comprehensive video conferencing platform designe
 ### Prerequisites
 
 - Node.js v10+ installed on your system
+- Python pre-installed on your system
+
+### Modules
+1. SOS_Frontend - Contains code for frontend part of the application
+2. SOS_Backend - Contains code for backend part of the application
+
 
 ### Steps to Run the Project
 
