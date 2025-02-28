@@ -37,5 +37,19 @@ EquaSpace is an innovative and comprehensive video conferencing platform designe
    ```
 5. Open `http://localhost:3000` in your browser.
 
+### Steps to run the sign translation application
+
+1. Navigate to application directory:
+   ```sh
+   cd ./SOS_Backend/scripts/sign_lang
+   ```
+2. Install the requirements:
+   ```sh
+   pip install -r requirements.txt
+   ```
+4. Run the application:
+   ```sh
+   python prediction.py
+   ```
 ##
 
