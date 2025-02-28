@@ -1,2 +1,2 @@
-# Meetify-Backend
+# EquaSpace-Backend
 Backend Side
