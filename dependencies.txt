@@ -1,1 +1,9 @@
 pyautogui
+tensorflow
+keras
+opencv
+pyttsx3
+cvzone
+pillow
+PyEnchant
+RealtimeSTT
