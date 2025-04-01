@@ -1,2 +1,14 @@
+# System dependencies (install first)
 sudo apt update
 sudo apt install ffmpeg
+
+# Python packages (install via pip)
+pyautogui
+tensorflow
+keras
+opencv
+pyttsx3
+cvzone
+pillow
+PyEnchant
+RealtimeSTT
