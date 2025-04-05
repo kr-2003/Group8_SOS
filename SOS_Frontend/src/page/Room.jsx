@@ -39,6 +39,14 @@ import { io } from "socket.io-client";
 import { useAuth } from "../context/AuthContext";
 import Loading from "../components/Loading";
 
+import { SelfieSegmentation } from "@mediapipe/selfie_segmentation";
+import { Camera } from "@mediapipe/camera_utils";
+
+import axios from "axios";
+
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
+
+
 const Room = () => {
   const [loading, setLoading] = useState(true);
   const [localStream, setLocalStream] = useState(null);
@@ -65,6 +73,17 @@ const Room = () => {
 
   const [particpentsOpen, setParticpentsOpen] = useState(true);
 
+  const [processedStream, setProcessedStream] = useState(null);
+  const processedVideo = useRef();
+
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition
+  } = useSpeechRecognition();
+
+
   const sendMessage = (e) => {
     e.preventDefault();
     if (msgText) {
@@ -84,7 +103,7 @@ const Room = () => {
 
   useEffect(() => {
     const unsub = () => {
-      socket.current = io.connect("http://localhost:5000");
+      socket.current = io.connect("http://localhost:5555");
       socket.current.on("message", (data) => {
         const audio = new Audio(msgSFX);
         if (user?.uid !== data.user.id) {
@@ -113,11 +132,11 @@ const Room = () => {
               roomID,
               user: user
                 ? {
-                    uid: user?.uid,
-                    email: user?.email,
-                    name: user?.displayName,
-                    photoURL: user?.photoURL,
-                  }
+                  uid: user?.uid,
+                  email: user?.email,
+                  name: user?.displayName,
+                  photoURL: user?.photoURL,
+                }
                 : null,
             });
             socket.current.on("all users", (users) => {
@@ -175,6 +194,10 @@ const Room = () => {
     return unsub();
   }, [user, roomID]);
 
+  if (!browserSupportsSpeechRecognition) {
+    return <span>Browser doesn't support speech recognition.</span>;
+  }
+
   const createPeer = (userToSignal, callerID, stream) => {
     const peer = new Peer({
       initiator: true,
@@ -189,11 +212,11 @@ const Room = () => {
         signal,
         user: user
           ? {
-              uid: user?.uid,
-              email: user?.email,
-              name: user?.displayName,
-              photoURL: user?.photoURL,
-            }
+            uid: user?.uid,
+            email: user?.email,
+            name: user?.displayName,
+            photoURL: user?.photoURL,
+          }
           : null,
       });
     });
@@ -235,23 +258,20 @@ const Room = () => {
                   >
                     <motion.div
                       layout
-                      className={`grid grid-cols-1 gap-4  ${
-                        showChat ? "md:grid-cols-2" : "lg:grid-cols-3 sm:grid-cols-2"
-                      } `}
+                      className={`grid grid-cols-1 gap-4  ${showChat ? "md:grid-cols-2" : "lg:grid-cols-3 sm:grid-cols-2"
+                        } `}
                     >
                       <motion.div
                         layout
-                        className={`relative bg-lightGray rounded-lg aspect-video overflow-hidden ${
-                          pin && "md:col-span-2 md:row-span-2 md:col-start-1 md:row-start-1"
-                        }`}
+                        className={`relative bg-lightGray rounded-lg aspect-video overflow-hidden ${pin && "md:col-span-2 md:row-span-2 md:col-start-1 md:row-start-1"
+                          }`}
                       >
                         <div className="absolute top-4 right-4 z-20">
                           <button
-                            className={`${
-                              pin
-                                ? "bg-blue border-transparent"
-                                : "bg-slate-800/70 backdrop-blur border-gray"
-                            } md:border-2 border-[1px] aspect-square md:p-2.5 p-1.5 cursor-pointer md:rounded-xl rounded-lg text-white md:text-xl text-lg`}
+                            className={`${pin
+                              ? "bg-blue border-transparent"
+                              : "bg-slate-800/70 backdrop-blur border-gray"
+                              } md:border-2 border-[1px] aspect-square md:p-2.5 p-1.5 cursor-pointer md:rounded-xl rounded-lg text-white md:text-xl text-lg`}
                             onClick={() => setPin(!pin)}
                           >
                             {pin ? <PinActiveIcon /> : <PinIcon />}
@@ -315,11 +335,10 @@ const Room = () => {
                       <div className="flex gap-2">
                         <div>
                           <button
-                            className={`${
-                              micOn
-                                ? "bg-blue border-transparent"
-                                : "bg-slate-800/70 backdrop-blur border-gray"
-                            } border-2  p-2 cursor-pointer rounded-xl text-white text-xl`}
+                            className={`${micOn
+                              ? "bg-blue border-transparent"
+                              : "bg-slate-800/70 backdrop-blur border-gray"
+                              } border-2  p-2 cursor-pointer rounded-xl text-white text-xl`}
                             onClick={() => {
                               const audio = localVideo.current.srcObject.getAudioTracks()[0];
                               if (micOn) {
@@ -335,13 +354,13 @@ const Room = () => {
                             {micOn ? <MicOnIcon /> : <MicOffIcon />}
                           </button>
                         </div>
+
                         <div>
                           <button
-                            className={`${
-                              videoActive
-                                ? "bg-blue border-transparent"
-                                : "bg-slate-800/70 backdrop-blur border-gray"
-                            } border-2  p-2 cursor-pointer rounded-xl text-white text-xl`}
+                            className={`${videoActive
+                              ? "bg-blue border-transparent"
+                              : "bg-slate-800/70 backdrop-blur border-gray"
+                              } border-2  p-2 cursor-pointer rounded-xl text-white text-xl`}
                             onClick={() => {
                               const videoTrack = localStream
                                 .getTracks()
@@ -398,11 +417,10 @@ const Room = () => {
                         </div>
                         <div>
                           <button
-                            className={`${
-                              showChat
-                                ? "bg-blue border-transparent"
-                                : "bg-slate-800/70 backdrop-blur border-gray"
-                            } border-2  p-2 cursor-pointer rounded-xl text-white text-xl`}
+                            className={`${showChat
+                              ? "bg-blue border-transparent"
+                              : "bg-slate-800/70 backdrop-blur border-gray"
+                              } border-2  p-2 cursor-pointer rounded-xl text-white text-xl`}
                             onClick={() => {
                               setshowChat(!showChat);
                             }}
@@ -414,6 +432,11 @@ const Room = () => {
                     </div>
                   </div>
                 </motion.div>
+                <p>Microphone: {listening ? 'on' : 'off'}</p>
+                <button onClick={SpeechRecognition.startListening}>Start</button>
+                <button onClick={SpeechRecognition.stopListening}>Stop</button>
+                <button onClick={resetTranscript}>Reset</button>
+                <p>{transcript}</p>
                 {showChat && (
                   <motion.div
                     layout
@@ -435,18 +458,16 @@ const Room = () => {
                           </div>
                           <div className="ml-2 text-sm font">Particpents</div>
                           <div
-                            className={`${
-                              particpentsOpen && "rotate-180"
-                            } transition-all  ml-auto text-lg`}
+                            className={`${particpentsOpen && "rotate-180"
+                              } transition-all  ml-auto text-lg`}
                           >
                             <DownIcon />
                           </div>
                         </div>
                         <motion.div
                           layout
-                          className={`${
-                            particpentsOpen ? "block" : "hidden"
-                          } flex flex-col w-full mt-2 h-full max-h-[50vh] overflow-y-scroll gap-3 p-2 bg-blue-600`}
+                          className={`${particpentsOpen ? "block" : "hidden"
+                            } flex flex-col w-full mt-2 h-full max-h-[50vh] overflow-y-scroll gap-3 p-2 bg-blue-600`}
                         >
                           <AnimatePresence>
                             <motion.div
@@ -521,9 +542,8 @@ const Room = () => {
                               initial={{ x: msg.send ? 100 : -100, opacity: 0 }}
                               animate={{ x: 0, opacity: 1 }}
                               transition={{ duration: 0.08 }}
-                              className={`flex gap-2 ${
-                                msg?.user.id === user?.uid ? "flex-row-reverse" : ""
-                              }`}
+                              className={`flex gap-2 ${msg?.user.id === user?.uid ? "flex-row-reverse" : ""
+                                }`}
                               key={index}
                             >
                               <img
