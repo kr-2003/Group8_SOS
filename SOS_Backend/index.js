@@ -12,7 +12,7 @@ const io = require("socket.io")(server, {
 
 const users = {};
 
-const PORT = 80;
+const PORT = 5000;
 
 const socketToRoom = {};
 
