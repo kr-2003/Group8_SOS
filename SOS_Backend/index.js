@@ -8,12 +8,12 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // Adjust to your frontend URL
+    origin: "https://group-8-sos-frontend-drab.vercel.app/", // Adjust to your frontend URL
     methods: ["GET", "POST"],
   },
 });
 
-const rooms = {};
+const rooms = {}; // Format: { roomID: { users: [{ userId, user }], transcripts: [{ userId, text, timestamp }] } }
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
@@ -21,18 +21,18 @@ io.on("connection", (socket) => {
   // Handle video chunks
   socket.on("video-chunk", (data) => {
     const { roomID, userId, chunk } = data;
-  
+
     // Save chunk to a temporary file
     const outputPath = path.join(__dirname, `temp_${userId}_${roomID}.webm`);
-    // chunk should be an ArrayBuffer; convert to Buffer for writing
     fs.appendFileSync(outputPath, Buffer.from(chunk));
-  
+
     // Placeholder: Process video chunk for sign language recognition
     const processedText = processSignLanguage(outputPath);
-  
+
     // Send processed text back to client
     socket.emit("sign-language-text", { text: processedText });
   });
+
   // Handle stream end
   socket.on("video-stream-end", (data) => {
     const { roomID, userId } = data;
@@ -44,18 +44,48 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Existing socket events (e.g., join room, send message, etc.)
+  // Handle transcript
+  socket.on("transcript", (data) => {
+    const { roomID, userId, text } = data;
+    if (!rooms[roomID]) {
+      rooms[roomID] = { users: [], transcripts: [] };
+    }
+    // Append transcript with timestamp
+    const transcriptEntry = {
+      userId,
+      text,
+      timestamp: new Date().toISOString(),
+      username: data.username,
+    };
+    rooms[roomID].transcripts.push(transcriptEntry);
+    console.log(`Transcript received for room ${roomID}:`, transcriptEntry);
+
+    // Broadcast transcripts to all users in the room (including sender)
+    io.to(roomID).emit("room-transcripts", {
+      roomID,
+      transcripts: rooms[roomID].transcripts,
+    });
+  });
+
+  // Handle join room
   socket.on("join room", (data) => {
     const { roomID, user } = data;
-    if (!rooms[roomID]) rooms[roomID] = [];
-    rooms[roomID].push({ userId: socket.id, user });
+    if (!rooms[roomID]) {
+      rooms[roomID] = { users: [], transcripts: [] };
+    }
+    rooms[roomID].users.push({ userId: socket.id, user });
     socket.join(roomID);
     socket.to(roomID).emit("user joined", {
       signal: null,
       callerID: socket.id,
       user,
     });
-    socket.emit("all users", rooms[roomID].filter((u) => u.userId !== socket.id));
+    socket.emit("all users", rooms[roomID].users.filter((u) => u.userId !== socket.id));
+    // Send existing transcripts to the joining user
+    socket.emit("room-transcripts", {
+      roomID,
+      transcripts: rooms[roomID].transcripts,
+    });
   });
 
   socket.on("send message", (data) => {
@@ -79,9 +109,13 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     Object.keys(rooms).forEach((roomID) => {
-      rooms[roomID] = rooms[roomID].filter((u) => u.userId !== socket.id);
-      if (rooms[roomID].length === 0) delete rooms[roomID];
-      socket.to(roomID).emit("user left", socket.id);
+      rooms[roomID].users = rooms[roomID].users.filter((u) => u.userId !== socket.id);
+      if (rooms[roomID].users.length === 0) {
+        console.log(`Room ${roomID} is empty, deleting...`);
+        delete rooms[roomID];
+      } else {
+        socket.to(roomID).emit("user left", socket.id);
+      }
     });
     console.log("User disconnected:", socket.id);
   });
@@ -91,7 +125,6 @@ io.on("connection", (socket) => {
 function processSignLanguage(videoPath) {
   // Integrate your sign language recognition model here
   // For example, use OpenCV, MediaPipe, or a pre-trained ML model
-  // This is a placeholder returning dummy text
   return "Recognized sign language text";
 }
 
