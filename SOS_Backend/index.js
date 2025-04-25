@@ -44,6 +44,23 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Handle screen share stream
+  socket.on("screen-share-start", (data) => {
+    const { roomID, userId, screenStream } = data;
+
+    // Send screen stream to all users in the room except the one sharing
+    socket.to(roomID).emit("screen-share-stream", {
+      screenStream,
+      userId,
+    });
+  });
+
+  // Handle screen share end
+  socket.on("screen-share-end", (data) => {
+    const { roomID, userId } = data;
+    socket.to(roomID).emit("screen-share-ended", { userId });
+  });
+
   // Existing socket events (e.g., join room, send message, etc.)
   socket.on("join room", (data) => {
     const { roomID, user } = data;
