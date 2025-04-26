@@ -7,7 +7,7 @@ import cv2
 from keras.models import load_model
 import traceback
 import math
-import enchant
+# import enchant
 from string import ascii_uppercase
 import pyttsx3
 from cvzone.HandTrackingModule import HandDetector
@@ -17,7 +17,7 @@ hd = HandDetector(maxHands=1)
 hd2 = HandDetector(maxHands=1)
 
 app = FastAPI()
-ddd = enchant.Dict("en-US")
+# ddd = enchant.Dict("en-US")
 
 offset=29
 
