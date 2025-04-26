@@ -8,3 +8,4 @@ PyEnchant
 mediapipe
 fastapi
 pyenchant
+python-multipart
