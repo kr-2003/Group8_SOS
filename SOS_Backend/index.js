@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // Adjust to your frontend URL
+    origin: "https://group-8-sos-frontend-drab.vercel.app", // Adjust to your frontend URL
     methods: ["GET", "POST"],
   },
 });
