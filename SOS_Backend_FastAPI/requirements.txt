@@ -6,3 +6,4 @@ cvzone
 pillow
 PyEnchant
 mediapipe
+fastapi
