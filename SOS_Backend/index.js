@@ -44,6 +44,40 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Handle screen share stream
+  socket.on("screen-share-start", (data) => {
+    const { roomID, userId, screenStream } = data;
+
+    // Send screen stream to all users in the room except the one sharing
+    socket.to(roomID).emit("screen-share-stream", {
+      screenStream,
+      userId,
+    });
+  });
+
+  // Handle screen share end
+  socket.on("screen-share-end", (data) => {
+    const { roomID, userId } = data;
+    socket.to(roomID).emit("screen-share-ended", { userId });
+  });
+
+
+  socket.on("screen-share-start", (data) => {
+    const { roomID, userId, screenStream } = data;
+
+    // Send screen stream to all users in the room except the one sharing
+    socket.to(roomID).emit("screen-share-stream", {
+      screenStream,
+      userId,
+    });
+  });
+
+  // Handle screen share end
+  socket.on("screen-share-end", (data) => {
+    const { roomID, userId } = data;
+    socket.to(roomID).emit("screen-share-ended", { userId });
+  });
+
   // Handle transcript
   socket.on("transcript", (data) => {
     const { roomID, userId, text } = data;
